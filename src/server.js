@@ -112,8 +112,8 @@ process.on('SIGINT', () => {
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log(`FleetLink Backend Server is running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`Health check: http://localhost:${PORT}/health`);
+    console.log(`Environment is: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Health check is on: http://localhost:${PORT}/health`);
   });
 }
 
