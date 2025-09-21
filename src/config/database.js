@@ -21,9 +21,7 @@ const connectDB = async () => {
 
     const mongoURI = process.env.NODE_ENV === 'test' 
       ? process.env.MONGODB_TEST_URI 
-      : process.env.MONGODB_URI || "mongodb+srv://aftab1311:aftab12345@cluster0.54whjjw.mongodb.net/fleetlink?retryWrites=true&w=majority&appName=Cluster0";
-
-    // Check if MongoDB URI is provided
+      : process.env.MONGODB_URI;
     if (!mongoURI) {
       const errorMsg = process.env.NODE_ENV === 'production' 
         ? 'MONGODB_URI environment variable is not set in production'
