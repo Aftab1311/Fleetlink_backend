@@ -25,10 +25,15 @@ const connectDB = async () => {
 
     const options = {
       maxPoolSize: 10, // Maintain up to 10 socket connections
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+      serverSelectionTimeoutMS: 30000, // Keep trying to send operations for 30 seconds
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      connectTimeoutMS: 30000, // Connection timeout
       bufferCommands: true, // Enable buffering for serverless environments
-      bufferMaxEntries: 0 // Disable mongoose buffering
+      bufferMaxEntries: 0, // Disable mongoose buffering
+      retryWrites: true, // Retry writes on network errors
+      retryReads: true, // Retry reads on network errors
+      maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
+      heartbeatFrequencyMS: 10000 // Send heartbeat every 10 seconds
     };
 
     cached.promise = mongoose.connect(mongoURI, options);
@@ -37,9 +42,22 @@ const connectDB = async () => {
     // Cache the connection
     cached.conn = conn;
 
+    // Wait for connection to be ready
+    await new Promise((resolve, reject) => {
+      if (conn.connection.readyState === 1) {
+        resolve();
+      } else {
+        conn.connection.once('open', resolve);
+        conn.connection.once('error', reject);
+        // Timeout after 30 seconds
+        setTimeout(() => reject(new Error('Connection timeout')), 30000);
+      }
+    });
+
     if (process.env.NODE_ENV !== 'test') {
       console.log(`MongoDB Connected: ${conn.connection.host}:${conn.connection.port}`);
       console.log(`Database: ${conn.connection.name}`);
+      console.log(`Connection State: ${conn.connection.readyState}`);
     }
 
     // Handle connection events
@@ -79,5 +97,18 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB;
+// Health check function
+const checkConnection = async () => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Connection health check failed:', error);
+    return false;
+  }
+};
+
+module.exports = { connectDB, checkConnection };
 

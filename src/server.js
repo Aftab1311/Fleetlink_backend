@@ -6,7 +6,7 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
-const connectDB = require('./config/database');
+const { connectDB, checkConnection } = require('./config/database');
 const { errorHandler } = require('./middleware/errorHandler');
 const vehicleRoutes = require('./routes/vehicleRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
@@ -17,6 +17,28 @@ const PORT = process.env.PORT || 5000;
 // Connect to MongoDB
 connectDB().catch(err => {
   console.error('Failed to connect to MongoDB:', err);
+});
+
+// Database connection middleware
+app.use('/api', async (req, res, next) => {
+  try {
+    const isConnected = await checkConnection();
+    if (!isConnected) {
+      console.log('Database not connected, attempting to reconnect...');
+      await connectDB();
+    }
+    next();
+  } catch (error) {
+    console.error('Database connection check failed:', error);
+    res.status(503).json({
+      success: false,
+      error: {
+        message: 'Database connection failed',
+        type: 'DatabaseError'
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Security middleware
