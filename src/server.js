@@ -47,17 +47,17 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 // Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
-  message: {
-    error: 'Too many requests from this IP, please try again later.'
-  },
-  standardHeaders: true,
-  legacyHeaders: false
-});
+// const limiter = rateLimit({
+//   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
+//   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
+//   message: {
+//     error: 'Too many requests from this IP, please try again later.'
+//   },
+//   standardHeaders: true,
+//   legacyHeaders: false
+// });
 
-app.use('/api', limiter);
+// app.use('/api', limiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -109,13 +109,13 @@ process.on('SIGINT', () => {
 });
 
 // Start server only if not in test environment
-if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    console.log(`FleetLink Backend Server is running on port ${PORT}`);
-    console.log(`Environment is: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`Health check is on: http://localhost:${PORT}/health`);
-  });
-}
+// if (process.env.NODE_ENV !== 'test') {
+//   app.listen(PORT, () => {
+//     console.log(`FleetLink Backend Server is running on port ${PORT}`);
+//     console.log(`Environment is: ${process.env.NODE_ENV || 'development'}`);
+//     console.log(`Health check is on: http://localhost:${PORT}/health`);
+//   });
+// }
 
 module.exports = app;
 
