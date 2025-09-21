@@ -15,7 +15,7 @@
     "env": {
       "NODE_ENV": "production",
       "PORT": "5000",
-      "MONGODB_URI": "@MONGODB_URI",
+      "MONGODB_URI": "@mongo_db_uri",
       "JWT_SECRET": "@JWT_SECRET"
     }
   }
