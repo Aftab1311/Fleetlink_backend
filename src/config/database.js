@@ -21,7 +21,20 @@ const connectDB = async () => {
 
     const mongoURI = process.env.NODE_ENV === 'test' 
       ? process.env.MONGODB_TEST_URI 
-      : process.env.MONGODB_URI || 'mongodb://localhost:27017/fleetlink';
+      : process.env.MONGODB_URI || "mongodb+srv://aftab1311:aftab12345@cluster0.54whjjw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
+    // Check if MongoDB URI is provided
+    if (!mongoURI) {
+      const errorMsg = process.env.NODE_ENV === 'production' 
+        ? 'MONGODB_URI environment variable is not set in production'
+        : 'MONGODB_URI environment variable is not set. Please check your .env file';
+      console.error('❌ Database Configuration Error:', errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    console.log('🔗 Attempting to connect to MongoDB...');
+    console.log('📍 Environment:', process.env.NODE_ENV || 'development');
+    console.log('🔐 URI configured:', mongoURI ? 'Yes' : 'No');
 
     const options = {
       maxPoolSize: 10, // Maintain up to 10 socket connections
@@ -36,8 +49,10 @@ const connectDB = async () => {
       heartbeatFrequencyMS: 10000 // Send heartbeat every 10 seconds
     };
 
+    console.log('🚀 Starting MongoDB connection...');
     cached.promise = mongoose.connect(mongoURI, options);
     const conn = await cached.promise;
+    console.log('✅ MongoDB connection established successfully');
 
     // Cache the connection
     cached.conn = conn;
@@ -91,7 +106,22 @@ const connectDB = async () => {
     return conn;
 
   } catch (error) {
-    console.error('Database connection failed:', error.message);
+    console.error('❌ Database connection failed:', error.message);
+    console.error('🔍 Error details:', {
+      name: error.name,
+      code: error.code,
+      message: error.message
+    });
+    
+    // Provide specific error messages based on error type
+    if (error.message.includes('MONGODB_URI')) {
+      console.error('💡 Solution: Set MONGODB_URI environment variable in Vercel dashboard');
+    } else if (error.code === 'ENOTFOUND') {
+      console.error('💡 Solution: Check MongoDB connection string and network access');
+    } else if (error.code === 'EAUTH') {
+      console.error('💡 Solution: Check MongoDB username and password');
+    }
+    
     cached.promise = null; // Clear promise on error
     throw error; // Don't exit in serverless environment
   }
